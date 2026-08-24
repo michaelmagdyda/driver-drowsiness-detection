@@ -1,0 +1,75 @@
+# =============================================================================
+# Driver Drowsiness Detection System - Backend
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Secrets - NEVER commit (Coding Standards §14, Deployment §8)
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# -----------------------------------------------------------------------------
+# Virtual environments
+# -----------------------------------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+
+# -----------------------------------------------------------------------------
+# Python bytecode & build artefacts
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# -----------------------------------------------------------------------------
+# Testing & tooling caches
+# -----------------------------------------------------------------------------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# -----------------------------------------------------------------------------
+# Model weights - large binaries, tracked outside the backend
+# -----------------------------------------------------------------------------
+# MODEL_PATH points at the existing checkpoints/ directory at the repository
+# root; weights are never copied into this folder (128 MB per checkpoint).
+*.pth
+*.pt
+*.onnx
+
+# Root-anchored. A bare "models/" would also match app/domain/models/, which
+# 03_Backend_Architecture.md §8/§15 designates as the AI engine source folder -
+# silently un-tracking the entire Phase G implementation.
+/models/
+
+# -----------------------------------------------------------------------------
+# Runtime scratch space
+# -----------------------------------------------------------------------------
+tmp/
+temp/
+uploads/
+logs/
+*.log
+
+# -----------------------------------------------------------------------------
+# Editors & OS
+# -----------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini

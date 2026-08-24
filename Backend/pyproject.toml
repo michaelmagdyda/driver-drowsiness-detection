@@ -1,0 +1,152 @@
+# =============================================================================
+# Driver Drowsiness Detection System - Backend Tooling Configuration
+# =============================================================================
+# This file configures the toolchain only. Runtime dependencies live in
+# requirements.txt so there is a single source of truth for what gets installed
+# (Coding Standards §28 - do not duplicate).
+#
+# Division of labour, to stop the three tools fighting each other:
+#   black  -> the formatter. Owns line length and code layout.
+#   isort  -> the import sorter. Owns import order (ruff's "I" rules are OFF).
+#   ruff   -> the linter. Owns correctness, naming, docstrings, security.
+# =============================================================================
+
+[project]
+name = "driver-drowsiness-backend"
+version = "0.1.0"
+description = "FastAPI backend for the AI-Based Driver Drowsiness Detection System"
+readme = "README.md"
+
+# Coding Standards §2 mandates Python 3.12. The upper bound deliberately
+# excludes 3.14: this machine defaults to 3.14.5, where several required wheels
+# are not yet reliably available. Create the venv with `py -3.12`.
+requires-python = ">=3.12,<3.14"
+
+# Dependencies are intentionally NOT declared here - see requirements.txt.
+
+
+# =============================================================================
+# Black - formatter
+# =============================================================================
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.venv
+  | __pycache__
+)/
+'''
+
+
+# =============================================================================
+# isort - import ordering
+# =============================================================================
+[tool.isort]
+profile = "black"          # guarantees isort and black agree on formatting
+line_length = 100
+known_first_party = ["app", "tests"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+# skip_gitignore is deliberately NOT enabled: it shells out to `git`, which
+# emits a "fatal: not a git repository" line per file when this tree is not
+# under version control. extend_skip_glob covers the same directories without
+# requiring git.
+extend_skip_glob = [".venv/*", "**/__pycache__/*"]
+
+
+# =============================================================================
+# Ruff - linter
+# =============================================================================
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [".venv", "__pycache__", ".pytest_cache", ".ruff_cache"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes - unused imports, undefined names
+    "N",    # pep8-naming - enforces §5 (snake_case files, PascalCase classes)
+    "D",    # pydocstyle - enforces §21 (docstrings on public classes/functions)
+    "ANN",  # flake8-annotations - enforces §9 (type hints, "no exceptions")
+    "S",    # flake8-bandit - security; catches hardcoded secrets per §14
+    "B",    # flake8-bugbear - likely bugs
+    "A",    # flake8-builtins - shadowed builtins
+    "T20",  # flake8-print - forbids print(); use the logger per §13
+    "SIM",  # flake8-simplify
+    "RET",  # flake8-return
+    "ARG",  # flake8-unused-arguments
+    "UP",   # pyupgrade - modern Python idioms
+    "C4",   # flake8-comprehensions
+    "PTH",  # flake8-use-pathlib
+]
+
+ignore = [
+    "D203",    # conflicts with D211; we use D211 (no blank line before class docstring)
+    "D213",    # conflicts with D212; we use D212 (summary on first line)
+    "ANN401",  # allow typing.Any where it is genuinely the right type
+    "E501",    # line length is black's job, not the linter's
+]
+
+# "I" (isort rules) is deliberately absent from `select`: isort is configured
+# above as the authority on import order. Enabling both makes them disagree.
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"   # matches the Args:/Returns: example in §21
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may skip docstrings and annotations, and assert freely (S101).
+"tests/**/*.py" = ["D", "ANN", "S101"]
+# Package markers carry a module docstring but need nothing else.
+"**/__init__.py" = ["D104"]
+
+
+# =============================================================================
+# pytest
+# =============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+]
+markers = [
+    "unit: isolated tests of a single function or class",
+    "integration: tests crossing a service or infrastructure boundary",
+    "api: HTTP endpoint tests via TestClient",
+    "slow: excluded from the fast feedback loop",
+]
+
+
+# =============================================================================
+# Coverage
+# =============================================================================
+[tool.coverage.run]
+source = ["app"]
+branch = true
+omit = [
+    "*/__init__.py",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+# fail_under is intentionally unset during Phases D-K. Testing Strategy §20
+# targets 80% overall / 90% on domain logic; Phase L turns that into a gate
+# once there is enough surface area for the number to mean anything.

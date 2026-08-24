@@ -1,0 +1,45 @@
+# =============================================================================
+# Line-ending and binary handling
+# =============================================================================
+# This repository is developed on Windows and built inside Linux containers.
+# Without these rules Git's per-machine core.autocrlf setting decides how each
+# file is stored, so the same file can arrive in the index differently
+# depending on who staged it - producing diffs that are entirely line endings.
+#
+# `text=auto` lets Git detect text files and normalise them to LF in the
+# repository, while still checking them out with native endings on Windows.
+# The explicit `eol=lf` entries below are files that MUST be LF regardless of
+# platform, because they are consumed by Linux tooling where CRLF breaks them.
+# =============================================================================
+
+* text=auto
+
+# Consumed by Linux shells, container builds and infrastructure tooling. A CRLF
+# here is a real failure, not a cosmetic one: `/bin/sh` reads the trailing \r as
+# part of the command and the script dies with an obscure "not found".
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.tf text eol=lf
+*.tfvars text eol=lf
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+
+# Windows-native scripts, which require CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Never normalise: line-ending substitution corrupts binary content.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.onnx binary
+*.pth binary
+*.pt binary
+*.mp4 binary
+*.avi binary
+*.webm binary

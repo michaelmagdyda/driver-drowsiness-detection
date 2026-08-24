@@ -1,0 +1,38 @@
+# =============================================================================
+# Driver Drowsiness Detection System - Backend Development Dependencies
+# =============================================================================
+# Test runners, linters and formatters. Deliberately separated from
+# requirements.txt so none of this reaches a production image: Deployment §7
+# specifies the container carries FastAPI, PyTorch, OpenCV and the model, and
+# §18 requires the attack surface be kept minimal.
+#
+# Install (development):
+#   pip install -r requirements.txt -r requirements-dev.txt
+#
+# All tool configuration lives in pyproject.toml, not here.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Testing (Testing Strategy §29)
+# -----------------------------------------------------------------------------
+pytest>=8.3,<9.0               # test runner
+pytest-asyncio>=0.24,<1.0      # async test support; asyncio_mode = "auto"
+httpx2>=2.9,<3.0               # HTTP client backing starlette's TestClient.
+                               # Starlette 1.3 deprecates the original `httpx`
+                               # here ("install httpx2 instead"); with httpx2
+                               # present the DeprecationWarning is gone, verified
+                               # under `-W error::DeprecationWarning`.
+coverage>=7.6,<8.0             # coverage measurement; reads [tool.coverage] from
+                               # pyproject.toml natively via stdlib tomllib on 3.12,
+                               # so the [toml] extra is not needed
+
+
+# -----------------------------------------------------------------------------
+# Code quality (Coding Standards §22)
+# -----------------------------------------------------------------------------
+# Division of labour is defined in pyproject.toml:
+#   black -> layout   |   isort -> imports   |   ruff -> correctness
+ruff>=0.7,<1.0                 # linter
+black>=24.8,<26.0              # formatter
+isort>=5.13,<7.0               # import ordering

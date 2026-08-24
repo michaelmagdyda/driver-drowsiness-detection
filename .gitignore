@@ -1,0 +1,278 @@
+# =============================================================================
+# Driver Drowsiness Detection V2 - repository-root ignore rules
+# =============================================================================
+# Written during Phase 1.5, BEFORE `git init`, because the working tree already
+# contains real credentials, a 3.5 GB virtualenv, and several files far over
+# GitHub's 100 MB hard limit. The first `git add .` is the dangerous moment;
+# this file exists so that moment is safe.
+#
+# Backend/.gitignore and Frontend/.gitignore still apply to their own subtrees.
+# This file covers the root and anything they do not.
+#
+# -----------------------------------------------------------------------------
+# READ THIS BEFORE ADDING A PATTERN
+# -----------------------------------------------------------------------------
+# Never add a bare `models/` rule. Two directories of real application source
+# are named exactly that:
+#
+#     Backend/app/domain/models/     the detector backends and ModelManager
+#     ML/models/                     the training network definition
+#
+# A bare `models/` matches at every depth and would silently untrack both. Model
+# *artifacts* are excluded by extension (*.pth, *.onnx, ...) and by anchored
+# paths (/ML/checkpoints/), never by directory name.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Secrets and environment files
+# -----------------------------------------------------------------------------
+# Backend/.env holds the Supabase service-role key (which bypasses Row Level
+# Security), SECRET_KEY, the SMTP password and the WhatsApp key. It must never
+# be committed. The committed templates carry placeholders only.
+.env
+.env.*
+!.env.example
+!.env.docker.example
+!.env.*.example
+
+# Lovable/Cloudflare local secret file
+.dev.vars
+
+
+# -----------------------------------------------------------------------------
+# Certificates and private keys
+# -----------------------------------------------------------------------------
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+
+# Local TLS-proxy workaround from Phase 1 (removed in Phase 1.5). Kept here so
+# it cannot come back by accident on a machine that still needs it.
+.docker-ca/
+docker-compose.local-ca.yml
+
+
+# -----------------------------------------------------------------------------
+# Cloud provider credentials
+# -----------------------------------------------------------------------------
+# Nothing here is used yet - AWS arrives in Phase 4 - but a stray credentials
+# file is the single most common way an access key reaches a public repository.
+.aws/
+aws.json
+credentials
+config.aws
+*.aws-credentials
+
+
+# -----------------------------------------------------------------------------
+# Terraform (Phase 4+)
+# -----------------------------------------------------------------------------
+# State files routinely contain secrets in plaintext, including database
+# passwords and generated keys.
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+
+
+# -----------------------------------------------------------------------------
+# Kubernetes (Phase 5+)
+# -----------------------------------------------------------------------------
+kubeconfig
+*.kubeconfig
+# Rendered Secret manifests. Templates are fine; the filled-in copies are not.
+**/*-secret.generated.yaml
+
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+
+
+# -----------------------------------------------------------------------------
+# Node
+# -----------------------------------------------------------------------------
+node_modules/
+.npm
+.yarn/
+.pnp.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build output. package-lock.json IS committed - the project standardised on
+# npm and `npm ci` needs it.
+dist/
+dist-ssr/
+.output/
+.nitro/
+.vinxi/
+.tanstack/
+.wrangler/
+*.local
+
+# Alternative package managers. The project uses npm; a second lockfile lets CI
+# and the Docker image disagree about which one is authoritative.
+bun.lock
+bunfig.toml
+yarn.lock
+pnpm-lock.yaml
+
+
+# -----------------------------------------------------------------------------
+# Test, lint and coverage caches
+# -----------------------------------------------------------------------------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+# pytest --basetemp scratch dirs. These fill with generated fixtures (.pth,
+# .mp4, .onnx) that would otherwise land in the first commit.
+.pytest-tmp*/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+
+
+# -----------------------------------------------------------------------------
+# ML artifacts - weights, checkpoints and exports
+# -----------------------------------------------------------------------------
+# Excluded by EXTENSION so no source directory is ever caught by name.
+#
+# This currently also ignores Backend/best.onnx (68 MB), which the Docker build
+# COPYs into the image. That is deliberate but TEMPORARY: the file stays on disk
+# and local builds keep working, but CI will have no model to copy until the
+# artifact strategy is decided (audit D12 - un-ignore that one path, Git LFS,
+# S3, or bake-from-release). Do not resolve it by deleting these lines.
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.pb
+*.h5
+*.tflite
+*.safetensors
+
+
+# -----------------------------------------------------------------------------
+# ML training data and outputs
+# -----------------------------------------------------------------------------
+# Anchored with a leading slash: these match only at the repository root, so a
+# similarly named directory elsewhere in the source tree is unaffected.
+#
+# Sizes as of Phase 1.5:  venv 3.5 GB · checkpoints 323 MB · results 149 MB ·
+# videos 117 MB. Three individual files exceed GitHub's 100 MB hard limit.
+/ML/venv/
+/ML/checkpoints/
+/ML/results/
+/ML/videos/
+/ML/datasets/
+/ML/dataset/
+/ML/data/
+/ML/runs/
+/ML/outputs/
+/ML/logs/
+/ML/wandb/
+
+# Media anywhere in the tree. Frontend/public is re-included below because the
+# site's own assets are source, not training output.
+*.avi
+*.mp4
+*.mov
+*.mkv
+*.webm
+!Frontend/public/**
+
+
+# -----------------------------------------------------------------------------
+# Archives
+# -----------------------------------------------------------------------------
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+
+# -----------------------------------------------------------------------------
+# Phase leftovers and scratch space
+# -----------------------------------------------------------------------------
+_to_delete/
+_ts_backup*
+*.bak
+*.orig
+*.rej
+tmp/
+temp/
+scratch/
+
+
+# -----------------------------------------------------------------------------
+# Logs
+# -----------------------------------------------------------------------------
+logs/
+*.log
+
+
+# -----------------------------------------------------------------------------
+# Editors and operating systems
+# -----------------------------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*.sw?
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

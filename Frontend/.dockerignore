@@ -1,0 +1,63 @@
+# =============================================================================
+# Frontend build context exclusions
+# =============================================================================
+# node_modules and .output are the important ones: both are host-built, both
+# are large, and both are regenerated inside the image. Copying them in would
+# be slower AND could smuggle a Windows-built binary or a stale Cloudflare
+# Worker bundle into a Linux Node image.
+# =============================================================================
+
+# --- Secrets and local env ----------------------------------------------------
+# VITE_* values are compiled into the browser bundle, so they are supplied as
+# build args instead - never by copying a developer's .env into the context.
+**/.env
+**/.env.*
+!.env.example
+**/.dev.vars
+
+# --- Host-built dependencies and output ---------------------------------------
+# `**/` matters: Docker matches a bare `node_modules/` only at the context
+# root, so nested copies would otherwise be shipped into the build context.
+**/node_modules/
+**/.output/
+**/.nitro/
+**/.vinxi/
+**/.tanstack/
+**/dist/
+**/dist-ssr/
+**/.wrangler/
+
+# --- Alternative package manager ----------------------------------------------
+# This project standardised on npm + package-lock.json; the Dockerfile runs
+# `npm ci`. A stray bun.lock invites CI and the image to disagree.
+bun.lock
+bunfig.toml
+yarn.lock
+pnpm-lock.yaml
+
+# --- Superseded code ----------------------------------------------------------
+_to_delete/
+_ts_backup.tar.gz
+
+# --- Supabase CLI project (migrations run against hosted Supabase) ------------
+supabase/
+
+# --- Version control, tooling and editor noise --------------------------------
+.git/
+.gitignore
+.github/
+.vscode/
+.idea/
+**/.DS_Store
+**/Thumbs.db
+.lovable/
+eslint.config.js
+.prettierrc
+.prettierignore
+
+# --- Docs, logs, scratch ------------------------------------------------------
+**/*.md
+**/*.log
+**/npm-debug.log*
+Dockerfile*
+.dockerignore

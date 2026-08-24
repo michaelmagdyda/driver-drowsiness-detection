@@ -1,0 +1,78 @@
+# =============================================================================
+# Backend build context exclusions
+# =============================================================================
+# Everything listed here is kept OUT of the image. The first block is the
+# security-critical one: without it a `COPY . .` bakes real credentials
+# (service-role key, SECRET_KEY, SMTP password) into a published image layer,
+# where `docker history` can read them back out even if a later layer deletes
+# the file.
+# =============================================================================
+
+# --- Secrets: never, under any circumstance -----------------------------------
+**/.env
+**/.env.*
+!.env.example
+**/*.pem
+**/*.key
+
+# --- Virtualenvs (host-built, wrong platform, huge) ---------------------------
+.venv/
+venv/
+env/
+ENV/
+
+# --- Python caches / build artefacts ------------------------------------------
+# NOTE the `**/` prefixes throughout this file. Docker matches a bare
+# `__pycache__/` only at the context root, so without `**/` every nested
+# app/**/__pycache__ (including stale .pyc from another Python version)
+# is copied straight into the image.
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- Test, coverage and lint caches -------------------------------------------
+tests/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+requirements-dev.txt
+
+# --- Dead / superseded code ---------------------------------------------------
+gateway/
+_to_delete/
+
+# --- Version control and editor noise -----------------------------------------
+.git/
+.gitignore
+.github/
+.vscode/
+.idea/
+**/.DS_Store
+**/Thumbs.db
+
+# --- Docs and local-only compose files ----------------------------------------
+**/*.md
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# --- Local database tooling (migrations are applied by Supabase, not the app) --
+db/
+
+# --- Logs and scratch ---------------------------------------------------------
+**/*.log
+tmp/
+temp/
+
+# NOTE: best.onnx and test_metrics_tuned.json are deliberately NOT ignored -
+# both are COPYed into the image by the Dockerfile.

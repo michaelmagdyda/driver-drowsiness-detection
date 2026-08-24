@@ -1,0 +1,107 @@
+# =============================================================================
+# Driver Drowsiness Detection System - Backend Dependencies
+# =============================================================================
+# Target runtime: Python 3.12 (see pyproject.toml [project].requires-python)
+#
+# This file contains RUNTIME dependencies only - what the production container
+# needs to serve requests. Test and lint tooling lives in requirements-dev.txt
+# so it never reaches a production image (Deployment §7 / §18: keep the attack
+# surface minimal).
+#
+# Install (development - runtime + tooling):
+#   py -3.12 -m venv .venv
+#   .venv\Scripts\activate
+#   pip install -r requirements.txt -r requirements-dev.txt
+#
+# Install (production - runtime only):
+#   pip install -r requirements.txt
+#
+# Dependencies are added phase by phase. Only what a completed phase actually
+# imports is listed here; later phases append their own section rather than
+# pulling the whole stack in up front. This keeps the venv small and startup
+# fast while the foundation is being built.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Phase D - Backend Foundation (runtime)
+# -----------------------------------------------------------------------------
+fastapi>=0.115,<1.0            # web framework, OpenAPI, dependency injection
+uvicorn[standard]>=0.30,<1.0   # ASGI server; [standard] adds websockets + httptools
+pydantic>=2.9,<3.0             # request/response models (Pydantic v2 per standards §2)
+pydantic-settings>=2.5,<3.0    # typed environment configuration (§15)
+python-dotenv>=1.0,<2.0        # .env loading in local development
+
+
+# -----------------------------------------------------------------------------
+# Phase E - Authentication (runtime)
+# -----------------------------------------------------------------------------
+# pyjwt[crypto]: this project's Supabase instance signs with ES256 (ECDSA over
+# P-256), an asymmetric scheme. The [crypto] extra pulls in `cryptography`,
+# which PyJWT needs to verify ECDSA signatures and to parse the JWKS public keys.
+pyjwt[crypto]>=2.9,<3.0        # Supabase access-token verification (ES256)
+#
+# httpx: async fetch of the JWKS public keys in app/infra/jwks.py. Declared
+# explicitly rather than leaned on as a transitive dependency of supabase.
+httpx>=0.27,<1.0               # async HTTP client for JWKS retrieval
+#
+# Brought forward from Phase F: role checks read public.user_roles, so
+# authorisation cannot work without database access. Supplies the async client
+# (`acreate_client`) required by Coding Standards §10.
+supabase>=2.15,<3.0            # Supabase client (service-role, async)
+
+
+# -----------------------------------------------------------------------------
+# Phase G - AI Integration (runtime)
+# -----------------------------------------------------------------------------
+# The trained Faster R-CNN checkpoint is loaded once at startup and served
+# through app/domain/models. torch/torchvision run the detector; opencv decodes
+# uploaded frames; python-multipart lets FastAPI parse the file upload.
+#
+# NOTE on torch: the PyTorch (.pth) backend is fully supported in code but its
+# dependencies are OPTIONAL and live in requirements-torch.txt. They are not
+# listed here because the deployed runtime serves the ONNX export, and torch's
+# default wheels bundle CUDA (~2 GB) that an ONNX-only image never executes.
+# app/domain/models/factory.py dispatches on the checkpoint extension, so a
+# .pth MODEL_PATH needs those extras installed:
+#   pip install -r requirements.txt -r requirements-torch.txt
+onnxruntime>=1.18,<2.0         # Faster R-CNN inference (.onnx checkpoints, see app/domain/models/onnx_backend.py)
+# NOTE on local GPU inference (Windows only - MODEL_DEVICE=auto/gpu in .env):
+#   pip uninstall onnxruntime && pip install onnxruntime-directml
+# swaps in DirectML support (DmlExecutionProvider) for this venv only - no
+# separate CUDA/cuDNN toolkit needed, just the GPU driver already installed.
+# Never pin onnxruntime-directml here: it has no Linux wheels, and the
+# deployment target (Render) has no GPU anyway - see DEPLOY.md.
+opencv-python-headless>=4.9,<5.0  # frame decoding / preprocessing (no GUI libs)
+numpy>=1.26,<3.0               # array interchange between decode, model and domain
+python-multipart>=0.0.9,<1.0   # multipart/form-data upload parsing
+
+
+# -----------------------------------------------------------------------------
+# Phase G2 - Annotated video preview (runtime)
+# -----------------------------------------------------------------------------
+# The video analysis endpoint burns real detection boxes onto every frame and
+# re-encodes the result to H.264 so it plays in any browser. OpenCV's own
+# VideoWriter cannot produce H.264 on a host with no OpenH264 library
+# installed (the common case), so encoding is done by piping raw frames to a
+# real ffmpeg binary instead. imageio-ffmpeg bundles a portable static ffmpeg
+# executable - no system install, no OpenH264 download - so this works
+# identically on every machine the app runs on.
+imageio-ffmpeg>=0.5,<1.0       # portable ffmpeg binary for H.264 encoding
+
+
+# -----------------------------------------------------------------------------
+# Reserved for later phases - DO NOT install yet
+# -----------------------------------------------------------------------------
+# Phase E7 (Rate limiting)
+#   slowapi                    # per-user / per-IP rate limiting
+#
+# Phase H (Fatigue engine / video)
+#   (temporal smoothing reuses the Phase G stack; no new runtime deps expected)
+#
+# Phase J (Notifications)
+#   aiosmtplib                 # async email delivery
+#
+# Phase K (Reports)
+#   reportlab                  # PDF generation
+#   jinja2                     # report templating

@@ -1,0 +1,249 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * DriveAlert design system.
+ * Dark cockpit aesthetic — calm by default, decisive under alert.
+ * Also ships a real light theme (see `.dark` below for the dark palette).
+ * All colors use oklch. Semantic tokens only — never hardcode in components.
+ */
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  /* Signal palette — driver state */
+  --color-signal-awake: var(--signal-awake);
+  --color-signal-drowsy: var(--signal-drowsy);
+  --color-signal-danger: var(--signal-danger);
+  --color-signal-awake-foreground: var(--signal-awake-foreground);
+  --color-signal-drowsy-foreground: var(--signal-drowsy-foreground);
+  --color-signal-danger-foreground: var(--signal-danger-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Light theme — same hue identity as the dark cockpit (mint/amber/red),
+   re-tuned in lightness/chroma for a light canvas. */
+:root {
+  --radius: 0.75rem;
+
+  --background: oklch(0.98 0.006 250);
+  --foreground: oklch(0.22 0.02 255);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.02 255);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.02 255);
+
+  /* Primary = signal mint — awake, alive, precise */
+  --primary: oklch(0.52 0.14 170);
+  --primary-foreground: oklch(0.99 0.005 170);
+
+  --secondary: oklch(0.95 0.01 250);
+  --secondary-foreground: oklch(0.28 0.02 255);
+
+  --muted: oklch(0.955 0.008 250);
+  --muted-foreground: oklch(0.48 0.02 250);
+
+  --accent: oklch(0.93 0.03 200);
+  --accent-foreground: oklch(0.22 0.02 255);
+
+  --destructive: oklch(0.58 0.22 25);
+  --destructive-foreground: oklch(0.99 0.01 60);
+
+  --border: oklch(0 0 0 / 10%);
+  --input: oklch(0 0 0 / 14%);
+  --ring: oklch(0.52 0.14 170 / 45%);
+
+  /* Signal palette */
+  --signal-awake: oklch(0.52 0.14 170);
+  --signal-awake-foreground: oklch(0.99 0.005 170);
+  --signal-drowsy: oklch(0.55 0.15 85);
+  --signal-drowsy-foreground: oklch(0.99 0.01 90);
+  --signal-danger: oklch(0.58 0.22 25);
+  --signal-danger-foreground: oklch(0.99 0.01 60);
+
+  --chart-1: oklch(0.52 0.14 170);
+  --chart-2: oklch(0.55 0.13 220);
+  --chart-3: oklch(0.55 0.15 85);
+  --chart-4: oklch(0.58 0.22 25);
+  --chart-5: oklch(0.55 0.16 300);
+
+  --sidebar: oklch(0.965 0.006 250);
+  --sidebar-foreground: oklch(0.24 0.02 255);
+  --sidebar-primary: oklch(0.52 0.14 170);
+  --sidebar-primary-foreground: oklch(0.99 0.005 170);
+  --sidebar-accent: oklch(0.93 0.02 250);
+  --sidebar-accent-foreground: oklch(0.22 0.02 255);
+  --sidebar-border: oklch(0 0 0 / 8%);
+  --sidebar-ring: oklch(0.52 0.14 170 / 35%);
+
+  color-scheme: light;
+}
+
+.dark {
+  /* Deep cockpit base — the original/default DriveAlert look. */
+  --radius: 0.75rem;
+
+  --background: oklch(0.16 0.018 250);
+  --foreground: oklch(0.96 0.008 240);
+
+  --card: oklch(0.205 0.02 250);
+  --card-foreground: oklch(0.96 0.008 240);
+
+  --popover: oklch(0.22 0.022 250);
+  --popover-foreground: oklch(0.96 0.008 240);
+
+  --primary: oklch(0.82 0.16 170);
+  --primary-foreground: oklch(0.18 0.03 200);
+
+  --secondary: oklch(0.26 0.024 250);
+  --secondary-foreground: oklch(0.94 0.01 240);
+
+  --muted: oklch(0.24 0.02 250);
+  --muted-foreground: oklch(0.68 0.02 240);
+
+  --accent: oklch(0.3 0.05 200);
+  --accent-foreground: oklch(0.96 0.008 240);
+
+  --destructive: oklch(0.66 0.24 25);
+  --destructive-foreground: oklch(0.98 0.01 60);
+
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.82 0.16 170 / 60%);
+
+  --signal-awake: oklch(0.82 0.16 170);
+  --signal-awake-foreground: oklch(0.18 0.03 200);
+  --signal-drowsy: oklch(0.82 0.16 85);
+  --signal-drowsy-foreground: oklch(0.2 0.04 80);
+  --signal-danger: oklch(0.66 0.24 25);
+  --signal-danger-foreground: oklch(0.98 0.01 60);
+
+  --chart-1: oklch(0.82 0.16 170);
+  --chart-2: oklch(0.7 0.14 220);
+  --chart-3: oklch(0.82 0.16 85);
+  --chart-4: oklch(0.66 0.24 25);
+  --chart-5: oklch(0.7 0.15 300);
+
+  --sidebar: oklch(0.14 0.018 250);
+  --sidebar-foreground: oklch(0.92 0.01 240);
+  --sidebar-primary: oklch(0.82 0.16 170);
+  --sidebar-primary-foreground: oklch(0.18 0.03 200);
+  --sidebar-accent: oklch(0.24 0.024 250);
+  --sidebar-accent-foreground: oklch(0.96 0.008 240);
+  --sidebar-border: oklch(1 0 0 / 6%);
+  --sidebar-ring: oklch(0.82 0.16 170 / 40%);
+
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01", "ss03";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Cockpit surface — subtle radial glow behind hero content */
+@utility bg-cockpit {
+  background:
+    radial-gradient(1200px 600px at 20% -10%, color-mix(in oklch, var(--color-primary) 10%, transparent), transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, color-mix(in oklch, var(--color-chart-2) 10%, transparent), transparent 60%),
+    var(--color-background);
+}
+
+/* Metric numerals — tabular monospace */
+@utility text-metric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Signal pulse — used only when driver state = danger */
+@utility pulse-danger {
+  animation: pulse-danger 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-danger {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-signal-danger) 50%, transparent); }
+  50%      { box-shadow: 0 0 0 12px color-mix(in oklch, var(--color-signal-danger) 0%, transparent); }
+}
+
+/* Report printing — window.print() on the Reports page prints only the
+   #printable-report subtree (the real, currently-selected session's data),
+   not the surrounding chrome (nav, filters, other cards). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-report,
+  #printable-report * {
+    visibility: visible;
+  }
+  #printable-report {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
+}

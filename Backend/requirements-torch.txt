@@ -1,0 +1,20 @@
+# =============================================================================
+# Driver Drowsiness Detection System - OPTIONAL PyTorch backend
+# =============================================================================
+# Only needed to run a `.pth` checkpoint. The default deployment serves the
+# ONNX export through onnxruntime (requirements.txt) and does not import torch
+# at all: app/domain/models/custom_frcnn/__init__.py re-exports FasterRCNN
+# lazily, so torch is imported on first use rather than at startup.
+#
+# Install alongside the runtime set:
+#   pip install -r requirements.txt -r requirements-torch.txt
+#
+# CPU-only wheels are far smaller than the CUDA-bundled defaults:
+#   pip install -r requirements-torch.txt --index-url https://download.pytorch.org/whl/cpu
+#
+# Deliberately NOT installed in the production container image - see
+# Backend/Dockerfile.
+# =============================================================================
+
+torch>=2.2,<3.0                # Faster R-CNN inference (.pth checkpoints)
+torchvision>=0.17,<1.0         # detection model + image transforms (nms, roi_align)

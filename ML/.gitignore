@@ -1,0 +1,39 @@
+# virtual environments
+venv/
+.venv/
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# dataset — DO NOT publish (large; tens of thousands of files)
+data/images/
+data/labels/
+data/splits/
+
+# checkpoints: ignore ALL of them.
+#
+# This block used to re-include checkpoints/tuned/best.pth. That negation is
+# removed for two reasons:
+#   1. It pointed at a path that no longer exists - the real directory is
+#      checkpoints/tuned_fixed/ - so it protected nothing.
+#   2. Had it matched, it would have force-added a 128.6 MB file. GitHub's hard
+#      limit is 100 MB, so the first push would have been rejected outright.
+# A deeper .gitignore overrides the root one, so a negation here can defeat the
+# root's `*.pth` rule. Do not reintroduce it.
+#
+# How the model artifact reaches CI is an open decision (Phase 3). Until it is
+# made, nothing in here is versioned.
+checkpoints/
+
+# bulky/generated result artifacts (keep the .json / .csv / .png / .docx)
+results/examples/
+results/examples_*/
+*.mp4
+*.avi
+*.mov
+
+# OS / editor
+.DS_Store
+Thumbs.db

@@ -1,0 +1,136 @@
+# =============================================================================
+# Driver Drowsiness Detection V2 - local Docker stack
+# =============================================================================
+# Supersedes Backend/docker-compose.yml, which described an abandoned
+# ml-service + gateway split. The real runtime is two services: the FastAPI
+# backend (ONNX inference) and the server-side-rendered TanStack frontend.
+#
+#   copy .env.docker.example .env      # then fill in the VITE_* values
+#   docker compose build
+#   docker compose up -d
+#
+# SECRETS: none are written in this file. The backend's real credentials come
+# from Backend/.env via `env_file` - a file that is gitignored and is never
+# copied into an image (see Backend/.dockerignore). The `environment:` block
+# below holds only container-correct, non-secret defaults, and it deliberately
+# uses literal values rather than ${...} interpolation: an unset variable would
+# expand to an empty string and silently override a real value from env_file.
+# =============================================================================
+
+name: driver-drowsiness
+
+services:
+  # ---------------------------------------------------------------------------
+  # FastAPI backend - ONNX Faster R-CNN inference
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    image: driver-drowsiness-backend:local
+    container_name: dd-backend
+    restart: unless-stopped
+
+    # Real secrets (SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, SMTP_*, ...).
+    # Values in `environment:` below take precedence over anything here.
+    env_file:
+      - ./Backend/.env
+
+    environment:
+      # APP_ENV=production exercises the startup guard that refuses to boot on
+      # an empty or wildcard CORS allowlist - better to fail here than in EKS.
+      APP_ENV: production
+      LOG_LEVEL: INFO
+
+      # 127.0.0.1 (the .env default) binds to loopback *inside* the container
+      # and is unreachable from the host. Must be 0.0.0.0.
+      HOST: 0.0.0.0
+      PORT: "8000"
+      API_V1_PREFIX: /api/v1
+
+      # The browser calls the backend from the host origin below, so this is
+      # the origin CORS must admit - not the compose service name.
+      ALLOWED_ORIGINS: http://localhost:3000
+
+      # All three defaults point at ../ML/... , which does not exist in an
+      # image. These are the in-image locations the Dockerfile COPYs to.
+      MODEL_PATH: /app/models/best.onnx
+      MODEL_METRICS_PATH: /app/models/test_metrics_tuned.json
+      MODEL_CHECKPOINTS_DIR: /app/models
+      MODEL_DEVICE: cpu
+
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+
+    # Mirrors the image's own HEALTHCHECK; restated here because `depends_on`
+    # below gates the frontend on it and the timing is an operational choice.
+    # start_period is generous: production mode warms the ONNX session up.
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4).status == 200 else sys.exit(1)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+    networks:
+      - appnet
+
+  # ---------------------------------------------------------------------------
+  # TanStack Start frontend - SSR on Nitro's node-server preset
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+      args:
+        # THE TRAP, INVERTED: these are compiled into the *browser* bundle, so
+        # they are resolved by the user's browser on the host - not by this
+        # container. http://backend:8000 would be correct for a server-to-
+        # server call and is WRONG here; the browser cannot resolve `backend`.
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api/v1}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?set VITE_SUPABASE_URL in .env - copy .env.docker.example}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:?set VITE_SUPABASE_PUBLISHABLE_KEY in .env - copy .env.docker.example}
+        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID:-}
+    image: driver-drowsiness-frontend:local
+    container_name: dd-frontend
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "3000"
+
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+
+    # Don't serve a UI that would immediately fail every API call.
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+    networks:
+      - appnet
+
+# -----------------------------------------------------------------------------
+# One user-defined bridge so the services can resolve each other by name
+# (`http://backend:8000`) for any future server-to-server call. Browser-facing
+# URLs stay host URLs - see the VITE_API_URL note above.
+# -----------------------------------------------------------------------------
+networks:
+  appnet:
+    driver: bridge

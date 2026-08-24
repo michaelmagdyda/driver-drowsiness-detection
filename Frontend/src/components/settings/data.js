@@ -1,0 +1,101 @@
+import {
+  Settings2,
+  User,
+  Palette,
+  BrainCircuit,
+  Radio,
+  Bell,
+  FileText,
+  HardDrive,
+  ShieldCheck,
+  Plug,
+  Code2,
+  FlaskConical,
+  Info,
+} from "lucide-react";
+export const CATEGORIES = [
+  { id: "general", label: "General", icon: Settings2, group: "workspace" },
+  { id: "profile", label: "User Profile", icon: User, group: "workspace" },
+  { id: "appearance", label: "Appearance", icon: Palette, group: "workspace" },
+  { id: "ai", label: "AI Detection", icon: BrainCircuit, group: "product", badge: "Core" },
+  { id: "monitoring", label: "Monitoring", icon: Radio, group: "product" },
+  { id: "notifications", label: "Notifications", icon: Bell, group: "product" },
+  { id: "reports", label: "Reports", icon: FileText, group: "product" },
+  { id: "storage", label: "Storage", icon: HardDrive, group: "platform" },
+  { id: "security", label: "Security", icon: ShieldCheck, group: "platform" },
+  { id: "integrations", label: "Integrations", icon: Plug, group: "platform" },
+  { id: "api", label: "API Settings", icon: Code2, group: "platform" },
+  { id: "advanced", label: "Advanced", icon: FlaskConical, group: "system", badge: "Danger" },
+  { id: "about", label: "About System", icon: Info, group: "system" },
+];
+export const GROUP_LABELS = {
+  workspace: "Workspace",
+  product: "Product",
+  platform: "Platform",
+  system: "System",
+};
+export const INTEGRATIONS = [
+  {
+    id: "supabase",
+    name: "Supabase",
+    desc: "Auth, Postgres, storage",
+    status: "connected",
+    sync: "2m ago",
+  },
+  {
+    id: "fastapi",
+    name: "FastAPI Backend",
+    desc: "AI inference workers",
+    status: "connected",
+    sync: "just now",
+  },
+  {
+    id: "gdrive",
+    name: "Google Drive",
+    desc: "Report archival",
+    status: "disconnected",
+    sync: "—",
+  },
+  {
+    id: "email",
+    name: "Email Provider",
+    desc: "SMTP · SendGrid",
+    status: "connected",
+    sync: "6m ago",
+  },
+  { id: "whatsapp", name: "WhatsApp API", desc: "Twilio Business", status: "pending", sync: "—" },
+  {
+    id: "s3",
+    name: "Cloud Storage",
+    desc: "S3-compatible buckets",
+    status: "disconnected",
+    sync: "—",
+  },
+  {
+    id: "webhooks",
+    name: "Webhook Support",
+    desc: "Event fan-out",
+    status: "connected",
+    sync: "12m ago",
+  },
+];
+export const STORAGE = {
+  usedGB: 184.3,
+  totalGB: 500,
+  breakdown: [
+    { label: "Uploaded Videos", value: 96.2, color: "var(--color-signal-awake)" },
+    { label: "Uploaded Images", value: 21.4, color: "oklch(0.78 0.16 55)" },
+    { label: "Reports", value: 12.7, color: "var(--color-signal-drowsy)" },
+    { label: "Temporary Files", value: 8.6, color: "var(--color-signal-danger)" },
+    { label: "Cache", value: 4.4, color: "var(--color-muted-foreground)" },
+  ],
+};
+export const SYSTEM_INFO = [
+  { label: "Application Version", value: "1.4.2" },
+  { label: "AI Model Version", value: "yolov8n-drowsy-v3.2" },
+  { label: "Backend Version", value: "fastapi-0.116.1" },
+  { label: "Database Version", value: "postgres-15.6" },
+  { label: "Last Update", value: "2026-07-21 14:02" },
+  { label: "License", value: "Enterprise · Fleet-tier" },
+  { label: "Build Number", value: "#20260722.1" },
+];
