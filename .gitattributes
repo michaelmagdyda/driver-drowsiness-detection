@@ -43,3 +43,18 @@ Dockerfile text eol=lf
 *.mp4 binary
 *.avi binary
 *.webm binary
+
+# =============================================================================
+# Git LFS
+# =============================================================================
+# One narrowly-scoped rule, for the single deployed model only. It is
+# deliberately NOT `*.onnx`: every other .onnx in this tree (the ML training
+# exports under ML/checkpoints/) stays gitignored and must not be pulled into
+# LFS, where it would consume the same bandwidth quota on every clone.
+#
+# This line must stay AFTER the `*.onnx binary` rule above so it wins for this
+# one path - Git applies the last matching pattern per attribute.
+#
+# Requires `git lfs install` on any machine that clones this repository.
+# See MODEL_ARTIFACT.md.
+Backend/best.onnx filter=lfs diff=lfs merge=lfs -text
