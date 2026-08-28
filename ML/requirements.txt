@@ -3,6 +3,7 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch
 torchvision
+onnx>=1.16
 numpy>=1.24
 opencv-python-headless>=4.7
 Pillow>=9.0

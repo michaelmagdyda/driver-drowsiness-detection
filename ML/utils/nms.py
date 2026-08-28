@@ -42,8 +42,8 @@ def nms_from_scratch(boxes, scores, iou_threshold):
 
 def nms(boxes, scores, iou_threshold):
     """Fast NMS via torchvision. Same signature as nms_from_scratch."""
-    if boxes.numel() == 0:
-        return torch.empty((0,), dtype=torch.long, device=boxes.device)
+    # torchvision NMS already accepts empty tensors.  Avoiding Python control
+    # flow here is important because this function is part of the ONNX graph.
     return tv_nms(boxes, scores, iou_threshold)
 
 

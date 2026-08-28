@@ -170,8 +170,6 @@ def postprocess_detections(proposals, probs, deltas, img_size,
     for c in range(1, config.NUM_CLASSES):
         scores_c = probs[:, c]
         keep = scores_c > score_thresh
-        if keep.sum() == 0:
-            continue
         boxes_c = decode_boxes(deltas[keep, c], proposals[keep])
         boxes_c = clip_boxes(boxes_c, img_size)
         scores_c = scores_c[keep]
@@ -181,17 +179,13 @@ def postprocess_detections(proposals, probs, deltas, img_size,
         all_scores.append(scores_c[k])
         all_labels.append(torch.full((k.numel(),), c, dtype=torch.long, device=device))
 
-    if not all_boxes:
-        return {"boxes": torch.zeros((0, 4), device=device),
-                "labels": torch.zeros((0,), dtype=torch.long, device=device),
-                "scores": torch.zeros((0,), device=device)}
-
     boxes = torch.cat(all_boxes)
     scores = torch.cat(all_scores)
     labels = torch.cat(all_labels)
-    if scores.numel() > max_det:                       # keep the strongest overall
-        top = scores.topk(max_det).indices
-        boxes, scores, labels = boxes[top], scores[top], labels[top]
+    # argsort + slicing also handles fewer than max_det items.  Keeping this as
+    # tensor-only control flow makes the inference graph safe to export to ONNX.
+    top = scores.argsort(descending=True)[:max_det]
+    boxes, scores, labels = boxes[top], scores[top], labels[top]
     return {"boxes": boxes, "labels": labels, "scores": scores}
 
 
