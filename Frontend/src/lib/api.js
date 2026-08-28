@@ -3,7 +3,7 @@
 // { success: false, message, error_code, errors } - see Backend/CONTRACT.md.
 import { supabase } from "@/integrations/supabase/client";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api/v1";
+const API_URL = import.meta.env.VITE_API_URL || "/api/v1";
 
 export class ApiError extends Error {
   constructor(message, { errorCode, status } = {}) {
